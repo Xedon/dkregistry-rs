@@ -1,17 +1,17 @@
 [package]
-name = "dkregistry"
-version = "0.5.0"
 authors = ["Luca Bruno <lucab@debian.org>", "Stefan Junker <sjunker@redhat.com>"]
-license = "MIT OR Apache-2.0"
-documentation = "https://docs.rs/dkregistry"
-repository = "https://github.com/camallo/dkregistry-rs"
 description = "A pure-Rust asynchronous library for Docker Registry API"
-keywords = ["docker", "registry", "async"]
-exclude = [
-".gitignore",
-".travis.yml",
-]
+documentation = "https://docs.rs/dkregistry"
 edition = "2018"
+exclude = [
+  ".gitignore",
+  ".travis.yml",
+]
+keywords = ["docker", "registry", "async"]
+license = "MIT OR Apache-2.0"
+name = "dkregistry"
+repository = "https://github.com/camallo/dkregistry-rs"
+version = "0.5.0"
 
 [package.metadata.release]
 disable-publish = true
@@ -22,6 +22,7 @@ sign-commit = true
 tag-message = "dkregistry v{{version}}"
 
 [dependencies]
+async-stream = "0.3"
 base64 = "0.13"
 futures = "0.3"
 http = "0.2"
@@ -29,17 +30,16 @@ libflate = "1.0"
 log = "0.4"
 mime = "0.3"
 regex = "^1.1.0"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+reqwest = {version = "0", default-features = false, features = ["json"]}
+serde = {version = "1", features = ["derive"]}
 serde_ignored = "0.1"
+serde_json = "1"
+sha2 = "^0.9.0"
 strum = "0.19"
 strum_macros = "0.19"
 tar = "0.4"
-tokio = "0.2"
-reqwest = { version = "0.10", default-features = false, features = ["json"] }
-sha2 = "^0.9.0"
-async-stream = "0.3"
 thiserror = "1.0.19"
+tokio = "1"
 url = "2.1.1"
 
 [dev-dependencies]
@@ -48,12 +48,12 @@ env_logger = "0.7"
 mockito = "0.27"
 spectral = "0.6"
 test-case = "1.0.0"
-tokio = { version = "0.2", features = ["macros"] }
+tokio = {version = "1", features = ["rt-multi-thread", "rt", "macros"]}
 
 [features]
 default = ["reqwest-default-tls"]
 reqwest-default-tls = ["reqwest/default-tls"]
 reqwest-rustls = ["reqwest/rustls-tls"]
+test-mock = []
 test-net = []
 test-net-private = []
-test-mock = []

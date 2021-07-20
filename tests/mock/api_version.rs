@@ -3,20 +3,18 @@ extern crate mockito;
 extern crate tokio;
 
 use self::mockito::mock;
-use self::tokio::runtime::Runtime;
 
 static API_VERSION_K: &'static str = "Docker-Distribution-API-Version";
 static API_VERSION_V: &'static str = "registry/2.0";
 
-#[test]
-fn test_version_check_status_ok() {
+#[tokio::test]
+async fn test_version_check_status_ok() {
     let addr = mockito::server_address().to_string();
     let _m = mock("GET", "/v2/")
         .with_status(200)
         .with_header(API_VERSION_K, API_VERSION_V)
         .create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -26,24 +24,23 @@ fn test_version_check_status_ok() {
         .unwrap();
 
     let is_v2 = dclient.is_v2_supported();
-    let ok = runtime.block_on(is_v2).unwrap();
+    let ok = is_v2.await.unwrap();
     assert_eq!(ok, true);
 
     let ensure_v2 = dclient.ensure_v2_registry();
-    let _dclient = runtime.block_on(ensure_v2).unwrap();
+    let _dclient = ensure_v2.await.unwrap();
 
     mockito::reset();
 }
 
-#[test]
-fn test_version_check_status_unauth() {
+#[tokio::test]
+async fn test_version_check_status_unauth() {
     let addr = mockito::server_address().to_string();
     let _m = mock("GET", "/v2/")
         .with_status(401)
         .with_header(API_VERSION_K, API_VERSION_V)
         .create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -54,21 +51,20 @@ fn test_version_check_status_unauth() {
 
     let futcheck = dclient.is_v2_supported();
 
-    let res = runtime.block_on(futcheck).unwrap();
+    let res = futcheck.await.unwrap();
     assert_eq!(res, true);
 
     mockito::reset();
 }
 
-#[test]
-fn test_version_check_status_notfound() {
+#[tokio::test]
+async fn test_version_check_status_notfound() {
     let addr = mockito::server_address().to_string();
     let _m = mock("GET", "/v2/")
         .with_status(404)
         .with_header(API_VERSION_K, API_VERSION_V)
         .create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -79,21 +75,19 @@ fn test_version_check_status_notfound() {
 
     let futcheck = dclient.is_v2_supported();
 
-    let res = runtime.block_on(futcheck).unwrap();
+    let res = futcheck.await.unwrap();
     assert_eq!(res, false);
 
     mockito::reset();
 }
-
-#[test]
-fn test_version_check_status_forbidden() {
+#[tokio::test]
+async fn test_version_check_status_forbidden() {
     let addr = mockito::server_address().to_string();
     let _m = mock("GET", "/v2/")
         .with_status(403)
         .with_header(API_VERSION_K, API_VERSION_V)
         .create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -104,18 +98,17 @@ fn test_version_check_status_forbidden() {
 
     let futcheck = dclient.is_v2_supported();
 
-    let res = runtime.block_on(futcheck).unwrap();
+    let res = futcheck.await.unwrap();
     assert_eq!(res, false);
 
     mockito::reset();
 }
 
-#[test]
-fn test_version_check_noheader() {
+#[tokio::test]
+async fn test_version_check_noheader() {
     let addr = mockito::server_address().to_string();
     let _m = mock("GET", "/v2/").with_status(403).create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -126,21 +119,20 @@ fn test_version_check_noheader() {
 
     let futcheck = dclient.is_v2_supported();
 
-    let res = runtime.block_on(futcheck).unwrap();
+    let res = futcheck.await.unwrap();
     assert_eq!(res, false);
 
     mockito::reset();
 }
 
-#[test]
-fn test_version_check_trailing_slash() {
+#[tokio::test]
+async fn test_version_check_trailing_slash() {
     let addr = mockito::server_address().to_string();
     let _m = mock("GET", "/v2")
         .with_status(200)
         .with_header(API_VERSION_K, API_VERSION_V)
         .create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -151,7 +143,7 @@ fn test_version_check_trailing_slash() {
 
     let futcheck = dclient.is_v2_supported();
 
-    let res = runtime.block_on(futcheck).unwrap();
+    let res = futcheck.await.unwrap();
     assert_eq!(res, false);
 
     mockito::reset();
