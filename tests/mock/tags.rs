@@ -7,8 +7,8 @@ use self::futures::StreamExt;
 use self::mockito::mock;
 use self::tokio::runtime::Runtime;
 
-#[test]
-fn test_tags_simple() {
+#[tokio::test]
+async fn test_tags_simple() {
     let name = "repo";
     let tags = r#"{"name": "repo", "tags": [ "t1", "t2" ]}"#;
 
@@ -20,7 +20,6 @@ fn test_tags_simple() {
         .with_body(tags)
         .create();
 
-    let mut runtime = Runtime::new().unwrap();
     let dclient = dkregistry::v2::Client::configure()
         .registry(&addr)
         .insecure_registry(true)
@@ -31,7 +30,7 @@ fn test_tags_simple() {
 
     let futcheck = dclient.get_tags(name, None);
 
-    let res = runtime.block_on(futcheck.map(Result::unwrap).collect::<Vec<_>>());
+    let res = futcheck.map(Result::unwrap).collect::<Vec<_>>().await;
     assert_eq!(res.get(0).unwrap(), &String::from("t1"));
     assert_eq!(res.get(1).unwrap(), &String::from("t2"));
 
